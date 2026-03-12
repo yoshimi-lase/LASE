@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0f172a"/><meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Laser Optics"/>
+<link rel="manifest" href="manifest.json"/><link rel="apple-touch-icon" href="icon-192.png"/><title>Laser Optics Calc</title>
+<style>
+:root{--bg:#0b1020;--card:#121a30;--card2:#18233f;--line:#2b3b68;--text:#e5ecff;--muted:#aab7dd;--accent:#60a5fa;--input:#fff7cc;--ok:#16a34a;--ng:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP",sans-serif;background:linear-gradient(180deg,#0b1020,#10182d 35%,#0b1020);color:var(--text)}
+.app{max-width:760px;margin:0 auto;padding:14px 12px 90px}.header{position:sticky;top:0;z-index:5;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);padding:12px 0 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+h1{margin:0;font-size:1.3rem}.sub{font-size:.86rem;color:var(--muted);margin-top:4px}.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+.tab{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);font-weight:700}.tab.active{background:linear-gradient(180deg,#1b2a4d,#16213d);outline:2px solid rgba(96,165,250,.25)}
+.panel{display:none;margin-top:14px}.panel.active{display:block}.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.section-title{font-size:1rem;font-weight:800;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 140px;gap:8px 10px;align-items:center}
+label{font-size:.93rem}.unit{font-size:.8rem;color:var(--muted)}input{width:100%;padding:12px;border-radius:12px;border:1px solid #c7b95b;background:var(--input);font-size:1rem}
+.result{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center}.value{font-weight:800}.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.82rem;font-weight:800}
+.ok{background:rgba(22,163,74,.18);color:#b7f7c9;border:1px solid rgba(22,163,74,.35)}.ng{background:rgba(220,38,38,.18);color:#fecaca;border:1px solid rgba(220,38,38,.35)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.08);text-align:right}th:first-child,td:first-child{text-align:left}
+.foot{font-size:.78rem;color:var(--muted);line-height:1.5}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:#fff;font-weight:700}
+</style></head><body><div class="app"><div class="header"><h1>Laser Optics Calc</h1><div class="sub">無料・スマホ向け / Spot・DOF・Fiber・Propagation・Snell</div><div class="tabs">
+<button class="tab active" data-tab="spot">Spot</button><button class="tab" data-tab="dof">DOF</button><button class="tab" data-tab="fiber">Fiber</button><button class="tab" data-tab="prop">Propagation</button><button class="tab" data-tab="snell">Snell</button></div></div>
+<section id="spot" class="panel active"><div class="card"><h2 class="section-title">スポット径（自由空間集光）</h2><div class="grid">
+<label>波長 λ <span class="unit">[nm]</span></label><input id="spot_lambda" type="number" value="1064">
+<label>M² <span class="unit">[-]</span></label><input id="spot_m2" type="number" step="0.01" value="1.5">
+<label>入射ビーム径 D <span class="unit">[mm, 1/e²直径]</span></label><input id="spot_D" type="number" step="0.01" value="8">
+<label>焦点距離 f <span class="unit">[mm]</span></label><input id="spot_f" type="number" step="0.1" value="160"></div></div>
+<div class="card"><div class="result"><div>理論スポット径 d</div><div class="value" id="spot_d"></div><div>ウエスト半径 w0</div><div class="value" id="spot_w0"></div><div>Rayleigh長 zR</div><div class="value" id="spot_zr"></div><div>DOF ≒ 2zR</div><div class="value" id="spot_dof"></div></div>
+<p class="foot">式: d = 4 M² λ f / (π D)。λは mm 換算。高NA・実レンズ収差・fθ端部は別途補正が必要。</p></div></section>
+<section id="dof" class="panel"><div class="card"><h2 class="section-title">Defocus / DOF</h2><div class="grid">
+<label>波長 λ <span class="unit">[nm]</span></label><input id="dof_lambda" type="number" value="1064">
+<label>M² <span class="unit">[-]</span></label><input id="dof_m2" type="number" step="0.01" value="1.5">
+<label>最小スポット径 d0 <span class="unit">[µm]</span></label><input id="dof_d0" type="number" step="0.1" value="40">
+<label>defocus z <span class="unit">[mm]</span></label><input id="dof_z" type="number" step="0.01" value="0.5"></div></div>
+<div class="card"><div class="result"><div>Rayleigh長 zR</div><div class="value" id="dof_zr"></div><div>DOF ≒ 2zR</div><div class="value" id="dof_dof"></div><div>defocus時スポット径 d(z)</div><div class="value" id="dof_dz"></div><div>拡大倍率 d(z)/d0</div><div class="value" id="dof_ratio"></div></div></div>
+<div class="card"><h2 class="section-title">簡易伝播テーブル</h2><table><thead><tr><th>z [mm]</th><th>z/zR</th><th>d(z) [µm]</th></tr></thead><tbody id="dof_table"></tbody></table></div></section>
+<section id="fiber" class="panel"><div class="card"><h2 class="section-title">ファイバー出力 → コリメート</h2><div class="grid">
+<label>コア径 <span class="unit">[µm]</span></label><input id="fiber_core" type="number" value="14">
+<label>NA <span class="unit">[-]</span></label><input id="fiber_na" type="number" step="0.001" value="0.06">
+<label>コリメータ f <span class="unit">[mm]</span></label><input id="fiber_f" type="number" step="0.1" value="60">
+<label>有効レンズ径 <span class="unit">[mm]</span></label><input id="fiber_lens" type="number" step="0.1" value="12.7"></div></div>
+<div class="card"><div class="result"><div>出射半角 divergence</div><div class="value" id="fiber_div"></div><div>推定コリメート径 D ≈ 2fNA</div><div class="value" id="fiber_Dna"></div><div>簡易コア径目安</div><div class="value" id="fiber_Dcore"></div><div>採用コリメート径</div><div class="value" id="fiber_Duse"></div><div>レンズ余裕率</div><div class="value" id="fiber_margin"></div><div>判定</div><div id="fiber_ok"></div></div>
+<p class="foot">multimode / MOPA は NA 起因径優先の簡易設計。詳細は実レンズ仕様と実測ビーム径で再確認してください。</p></div></section>
+<section id="prop" class="panel"><div class="card"><h2 class="section-title">ビーム伝搬</h2><div class="grid">
+<label>波長 λ <span class="unit">[nm]</span></label><input id="prop_lambda" type="number" value="1064">
+<label>M² <span class="unit">[-]</span></label><input id="prop_m2" type="number" step="0.01" value="1.5">
+<label>初期ビーム径 d0 <span class="unit">[mm]</span></label><input id="prop_d0" type="number" step="0.01" value="2">
+<label>距離 z <span class="unit">[mm]</span></label><input id="prop_z" type="number" step="1" value="500">
+<label>full-angle divergence <span class="unit">[mrad, 任意入力]</span></label><input id="prop_div" type="number" step="0.001" value="0.8"></div></div>
+<div class="card"><div class="result"><div>M²と初期径からの zR</div><div class="value" id="prop_zr"></div><div>ガウシアン伝搬径 d(z)</div><div class="value" id="prop_dz"></div><div>遠視野近似径 d_ff</div><div class="value" id="prop_dff"></div></div></div></section>
+<section id="snell" class="panel"><div class="card"><h2 class="section-title">Snell / 平行平板</h2><div class="grid">
+<label>入射側 n1 <span class="unit">[-]</span></label><input id="snell_n1" type="number" step="0.001" value="1">
+<label>透過側 n2 <span class="unit">[-]</span></label><input id="snell_n2" type="number" step="0.001" value="1.45">
+<label>入射角 θi <span class="unit">[deg]</span></label><input id="snell_ti" type="number" step="0.1" value="20">
+<label>平行平板厚み t <span class="unit">[mm]</span></label><input id="snell_t" type="number" step="0.1" value="3">
+<label>AR面反射率 R/面 <span class="unit">[% 任意]</span></label><input id="snell_ar" type="number" step="0.01" value="0.5"></div></div>
+<div class="card"><div class="result"><div>屈折角 θt</div><div class="value" id="snell_tt"></div><div>臨界角 θc (n2→n1)</div><div class="value" id="snell_tc"></div><div>Brewster角</div><div class="value" id="snell_tb"></div><div>平行平板 横シフト δ</div><div class="value" id="snell_shift"></div><div>s偏光反射率</div><div class="value" id="snell_rs"></div><div>p偏光反射率</div><div class="value" id="snell_rp"></div><div>2面透過率（無AR, 平均）</div><div class="value" id="snell_tnoar"></div><div>2面透過率（AR想定）</div><div class="value" id="snell_tar"></div></div></div>
+<div class="card"><div class="actions"><button class="btn" id="installBtn" style="display:none">ホーム画面に追加</button></div><p class="foot">iPhoneは Safari の共有メニュー → ホーム画面に追加。Androidは Chrome のメニュー → ホーム画面に追加。</p></div></section>
+</div>
+<script>
+function fmt(v,d=3){return Number.isFinite(v)?v.toFixed(d):'—'} function rad(d){return d*Math.PI/180} function deg(r){return r*180/Math.PI}
+function calcSpot(){const l=+spot_lambda.value*1e-6,m=+spot_m2.value,D=+spot_D.value,f=+spot_f.value,d=4*m*l*f/(Math.PI*D),w=d/2,z=Math.PI*w*w/(l*m);spot_d.textContent=fmt(d*1000,2)+' µm';spot_w0.textContent=fmt(w*1000,2)+' µm';spot_zr.textContent=fmt(z,3)+' mm';spot_dof.textContent=fmt(2*z,3)+' mm'}
+function calcDOF(){const l=+dof_lambda.value*1e-6,m=+dof_m2.value,d0=+dof_d0.value/1000,z=+dof_z.value,w=d0/2,zr=Math.PI*w*w/(l*m),dz=d0*Math.sqrt(1+(z/zr)**2);dof_zr.textContent=fmt(zr,3)+' mm';dof_dof.textContent=fmt(2*zr,3)+' mm';dof_dz.textContent=fmt(dz*1000,2)+' µm';dof_ratio.textContent=fmt(dz/d0,3)+' x';let rows='';[-2,-1,-0.5,0,0.5,1,2].map(k=>k*zr).forEach(p=>{rows+=`<tr><td>${fmt(p,3)}</td><td>${fmt(p/zr,2)}</td><td>${fmt(d0*Math.sqrt(1+(p/zr)**2)*1000,2)}</td></tr>`});dof_table.innerHTML=rows}
+function calcFiber(){const core=+fiber_core.value/1000,na=+fiber_na.value,f=+fiber_f.value,lens=+fiber_lens.value,div=Math.asin(Math.min(na,0.999)),Dna=2*f*Math.tan(div),Dcore=core,Duse=Math.max(Dna,Dcore),margin=lens/Duse;fiber_div.textContent=fmt(deg(div),3)+' deg';fiber_Dna.textContent=fmt(Dna,3)+' mm';fiber_Dcore.textContent=fmt(Dcore,3)+' mm';fiber_Duse.textContent=fmt(Duse,3)+' mm';fiber_margin.textContent=fmt(margin,2)+' x';fiber_ok.innerHTML=`<span class="pill ${margin>=1.2?'ok':'ng'}">${margin>=1.2?'OK':'NG'}</span>`}
+function calcProp(){const l=+prop_lambda.value*1e-6,m=+prop_m2.value,d0=+prop_d0.value,z=+prop_z.value,div=+prop_div.value/1000,w=d0/2,zr=Math.PI*w*w/(l*m),dz=d0*Math.sqrt(1+(z/zr)**2),dff=d0+div*z;prop_zr.textContent=fmt(zr,2)+' mm';prop_dz.textContent=fmt(dz,3)+' mm';prop_dff.textContent=fmt(dff,3)+' mm'}
+function fresnel(n1,n2,ti){const s=(n1/n2)*Math.sin(ti); if(Math.abs(s)>1) return null; const tt=Math.asin(s); const rs=((n1*Math.cos(ti)-n2*Math.cos(tt))/(n1*Math.cos(ti)+n2*Math.cos(tt)))**2; const rp=((n1*Math.cos(tt)-n2*Math.cos(ti))/(n1*Math.cos(tt)+n2*Math.cos(ti)))**2; return {tt,rs,rp}}
+function calcSnell(){const n1=+snell_n1.value,n2=+snell_n2.value,ti=rad(+snell_ti.value),t=+snell_t.value,ar=+snell_ar.value/100,fr=fresnel(n1,n2,ti); if(!fr){snell_tt.textContent='全反射';return;} const tt=fr.tt,shift=t*Math.sin(ti-tt)/Math.cos(tt),tc=n2>n1?deg(Math.asin(n1/n2)):NaN,tb=deg(Math.atan2(n2,n1)),ravg=(fr.rs+fr.rp)/2; snell_tt.textContent=fmt(deg(tt),3)+' deg';snell_tc.textContent=Number.isFinite(tc)?fmt(tc,3)+' deg':'—';snell_tb.textContent=fmt(tb,3)+' deg';snell_shift.textContent=fmt(shift,4)+' mm';snell_rs.textContent=fmt(fr.rs*100,3)+' %';snell_rp.textContent=fmt(fr.rp*100,3)+' %';snell_tnoar.textContent=fmt((1-ravg)**2*100,3)+' %';snell_tar.textContent=fmt((1-ar)**2*100,3)+' %'}
+function recalc(){calcSpot();calcDOF();calcFiber();calcProp();calcSnell()} document.querySelectorAll('input').forEach(el=>el.addEventListener('input',recalc)); document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active')})); recalc();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+let deferredPrompt; window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); deferredPrompt=e; const btn=document.getElementById('installBtn'); btn.style.display='inline-block'; btn.addEventListener('click',async()=>{if(!deferredPrompt)return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; btn.style.display='none'},{once:true})});
+</script></body></html>
